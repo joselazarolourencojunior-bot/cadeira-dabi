@@ -69,6 +69,48 @@
 #define LIMIT_ENCOSTO_INF_PORT      GPIOA
 #define LIMIT_ENCOSTO_INF_PIN       GPIO_PIN_2
 
+/* Configurações da Matriz de Teclado 3x4 */
+/* Linhas (Outputs - Scan) */
+#define KEYPAD_ROW_PORT             GPIOD
+#define KEYPAD_ROW1_PIN             GPIO_PIN_3
+#define KEYPAD_ROW2_PIN             GPIO_PIN_4
+#define KEYPAD_ROW3_PIN             GPIO_PIN_5
+
+/* Colunas (Inputs com pull-up) */
+#define KEYPAD_COL_PORT             GPIOF
+#define KEYPAD_COL1_PIN             GPIO_PIN_4
+#define KEYPAD_COL2_PIN             GPIO_PIN_5
+#define KEYPAD_COL3_PIN             GPIO_PIN_6
+#define KEYPAD_COL4_PIN             GPIO_PIN_7
+
+/* Mapeamento das Teclas (3 linhas x 4 colunas = 12 teclas) */
+/*
+ *  Layout da Matriz:
+ *      COL1  COL2  COL3  COL4
+ * ROW1  1     2     3     A
+ * ROW2  4     5     6     B
+ * ROW3  7     8     9     C
+ * 
+ * Pode ser remapeado conforme necessidade
+ */
+#define KEY_1       0x01
+#define KEY_2       0x02
+#define KEY_3       0x03
+#define KEY_A       0x0A
+#define KEY_4       0x04
+#define KEY_5       0x05
+#define KEY_6       0x06
+#define KEY_B       0x0B
+#define KEY_7       0x07
+#define KEY_8       0x08
+#define KEY_9       0x09
+#define KEY_C       0x0C
+#define KEY_NONE    0x00
+
+#define KEYPAD_DEBOUNCE_TIME    50  /* ms - tempo de debounce */
+#define KEYPAD_ROWS             3
+#define KEYPAD_COLS             4
+
 /* Configurações de Temporização */
 #define WATCHDOG_BLINK_TIME     500  /* ms - pisca a cada 500ms */
 #define REFLETOR_TOGGLE_DELAY   200  /* ms - debounce do toggle */
@@ -183,6 +225,12 @@ static uint32_t memoriaAssentoPos = 0;
 static uint32_t memoriaEncostoPos = 0;
 static uint8_t memoriaValida = 0;
 
+/* Matriz de Teclado */
+static uint8_t keypadCurrentKey = KEY_NONE;
+static uint8_t keypadLastKey = KEY_NONE;
+static uint32_t keypadLastPressTime = 0;
+static uint8_t keypadPressed = 0;
+
 /* LED Watchdog */
 static uint32_t watchdogTimer = 0;
 static uint8_t watchdogState = 0;
@@ -245,6 +293,13 @@ void Memoria_LoadFromEEPROM(void);
 void Memoria_SaveToEEPROM(void);
 void Refletor_BlinkPattern(uint8_t count, uint16_t duration);
 
+/* Matriz de Teclado */
+void Keypad_Init(void);
+uint8_t Keypad_Scan(void);
+uint8_t Keypad_GetKey(void);
+void Keypad_ProcessKey(uint8_t key);
+static uint8_t Keypad_ReadColumn(void);
+
 /* Segurança */
 void Safety_Init(void);
 uint8_t Safety_CheckEmergencyStop(void);
@@ -281,6 +336,13 @@ void main(void)
         
         /* Atualiza encoder virtual */
         Encoder_Update();
+        
+        /* Lê e processa matriz de teclado */
+        uint8_t key = Keypad_GetKey();
+        if (key != KEY_NONE)
+        {
+            Keypad_ProcessKey(key);
+        }
         
         /* Processa pressionamento longo do refletor */
         UI_ProcessRefletorLongPress();
@@ -335,6 +397,7 @@ void System_Init(void)
     Watchdog_Init();
     Safety_Init();
     Encoder_Init();
+    Keypad_Init();
     Memoria_LoadFromEEPROM();
     
     /* Habilita interrupções */
@@ -685,6 +748,18 @@ void GPIO_Config(void)
     GPIO_Init(LIMIT_ASSENTO_INF_PORT, LIMIT_ASSENTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT);
     GPIO_Init(LIMIT_ENCOSTO_SUP_PORT, LIMIT_ENCOSTO_SUP_PIN, GPIO_MODE_IN_PU_NO_IT);
     GPIO_Init(LIMIT_ENCOSTO_INF_PORT, LIMIT_ENCOSTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT);
+    
+    /* ========== MATRIZ DE TECLADO 3x4 ========== */
+    /* Linhas - Saídas (inicialmente HIGH) */
+    GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
+    GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
+    GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
+    
+    /* Colunas - Entradas com pull-up */
+    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL1_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL2_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL3_PIN, GPIO_MODE_IN_PU_NO_IT);
+    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL4_PIN, GPIO_MODE_IN_PU_NO_IT);
 }
 
 /**
@@ -1594,6 +1669,272 @@ void Refletor_BlinkPattern(uint8_t count, uint16_t duration)
     
     /* Restaura estado original */
     Rele_Refletor(originalState);
+}
+
+/* ============================================================================
+   IMPLEMENTAÇÃO - MATRIZ DE TECLADO 3x4
+   ============================================================================ */
+
+/**
+ * @brief  Tabela de mapeamento da matriz de teclado
+ *         [linha][coluna] = código da tecla
+ */
+static const uint8_t keypadMap[KEYPAD_ROWS][KEYPAD_COLS] = {
+    {KEY_1, KEY_2, KEY_3, KEY_A},  /* Linha 1 */
+    {KEY_4, KEY_5, KEY_6, KEY_B},  /* Linha 2 */
+    {KEY_7, KEY_8, KEY_9, KEY_C}   /* Linha 3 */
+};
+
+/**
+ * @brief  Inicializa a matriz de teclado
+ * @param  None
+ * @retval None
+ */
+void Keypad_Init(void)
+{
+    /* Configuração já feita em GPIO_Config() */
+    keypadCurrentKey = KEY_NONE;
+    keypadLastKey = KEY_NONE;
+    keypadLastPressTime = 0;
+    keypadPressed = 0;
+}
+
+/**
+ * @brief  Lê o estado das colunas
+ * @param  None
+ * @retval uint8_t: máscara com estado das colunas (bit 0-3)
+ */
+static uint8_t Keypad_ReadColumn(void)
+{
+    uint8_t cols = 0;
+    
+    /* Lê cada coluna (0 = pressionado, 1 = não pressionado) */
+    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL1_PIN) == RESET)
+        cols |= 0x01;
+    
+    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL2_PIN) == RESET)
+        cols |= 0x02;
+    
+    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL3_PIN) == RESET)
+        cols |= 0x04;
+    
+    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL4_PIN) == RESET)
+        cols |= 0x08;
+    
+    return cols;
+}
+
+/**
+ * @brief  Faz scan da matriz de teclado
+ * @param  None
+ * @retval uint8_t: código da tecla pressionada ou KEY_NONE
+ */
+uint8_t Keypad_Scan(void)
+{
+    uint8_t row, col;
+    uint8_t colState;
+    
+    /* Scan cada linha */
+    for (row = 0; row < KEYPAD_ROWS; row++)
+    {
+        /* Coloca todas as linhas em HIGH */
+        GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN);
+        GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN);
+        GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN);
+        
+        /* Coloca linha atual em LOW */
+        switch (row)
+        {
+            case 0:
+                GPIO_WriteLow(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN);
+                break;
+            case 1:
+                GPIO_WriteLow(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN);
+                break;
+            case 2:
+                GPIO_WriteLow(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN);
+                break;
+        }
+        
+        /* Pequeno delay para estabilização */
+        nop(); nop(); nop(); nop(); nop();
+        
+        /* Lê estado das colunas */
+        colState = Keypad_ReadColumn();
+        
+        /* Verifica qual coluna foi pressionada */
+        if (colState != 0)
+        {
+            for (col = 0; col < KEYPAD_COLS; col++)
+            {
+                if (colState & (1 << col))
+                {
+                    /* Tecla encontrada */
+                    return keypadMap[row][col];
+                }
+            }
+        }
+    }
+    
+    /* Restaura todas as linhas em HIGH */
+    GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN);
+    GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN);
+    GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN);
+    
+    return KEY_NONE;
+}
+
+/**
+ * @brief  Obtém tecla pressionada com debounce
+ * @param  None
+ * @retval uint8_t: código da tecla ou KEY_NONE
+ */
+uint8_t Keypad_GetKey(void)
+{
+    uint8_t key = Keypad_Scan();
+    
+    /* Se nenhuma tecla pressionada */
+    if (key == KEY_NONE)
+    {
+        keypadPressed = 0;
+        keypadCurrentKey = KEY_NONE;
+        return KEY_NONE;
+    }
+    
+    /* Verifica se é a mesma tecla */
+    if (key == keypadCurrentKey)
+    {
+        /* Verifica debounce */
+        if (!keypadPressed && (systemTick - keypadLastPressTime) >= KEYPAD_DEBOUNCE_TIME)
+        {
+            keypadPressed = 1;
+            keypadLastKey = key;
+            return key;
+        }
+    }
+    else
+    {
+        /* Nova tecla detectada */
+        keypadCurrentKey = key;
+        keypadLastPressTime = systemTick;
+        keypadPressed = 0;
+    }
+    
+    return KEY_NONE;
+}
+
+/**
+ * @brief  Processa tecla pressionada
+ * @param  key: código da tecla
+ * @retval None
+ */
+void Keypad_ProcessKey(uint8_t key)
+{
+    /* Processa apenas no estado IDLE para segurança */
+    if (systemState != SYSTEM_IDLE)
+        return;
+    
+    switch (key)
+    {
+        case KEY_1:
+            /* Tecla 1 - Sobe Assento */
+            if (!Safety_CheckLimitAssentoSup())
+            {
+                Rele_SobeAssento(RELE_ON);
+                delay_ms(100);  /* Pulso curto */
+                Rele_SobeAssento(RELE_OFF);
+            }
+            break;
+            
+        case KEY_2:
+            /* Tecla 2 - Desce Assento */
+            if (!Safety_CheckLimitAssentoInf())
+            {
+                Rele_DesceAssento(RELE_ON);
+                delay_ms(100);
+                Rele_DesceAssento(RELE_OFF);
+            }
+            break;
+            
+        case KEY_3:
+            /* Tecla 3 - Sobe Encosto */
+            if (!Safety_CheckLimitEncostoSup())
+            {
+                Rele_SobeEncosto(RELE_ON);
+                delay_ms(100);
+                Rele_SobeEncosto(RELE_OFF);
+            }
+            break;
+            
+        case KEY_4:
+            /* Tecla 4 - Desce Encosto */
+            if (!Safety_CheckLimitEncostoInf())
+            {
+                Rele_DesceEncosto(RELE_ON);
+                delay_ms(100);
+                Rele_DesceEncosto(RELE_OFF);
+            }
+            break;
+            
+        case KEY_5:
+            /* Tecla 5 - Toggle Refletor */
+            Rele_ToggleRefletor();
+            break;
+            
+        case KEY_6:
+            /* Tecla 6 - Volta a Zero */
+            systemState = SYSTEM_VOLTA_ZERO;
+            operationStartTime = systemTick;
+            autoMovementActive = 1;
+            vzCompletoCiclo = 0;
+            Safety_ResetTimeout();
+            break;
+            
+        case KEY_7:
+            /* Tecla 7 - Posição de Trabalho */
+            if (vzCompletoCiclo)
+            {
+                systemState = SYSTEM_POSICAO_TRABALHO;
+                operationStartTime = systemTick;
+                autoMovementActive = 1;
+                Safety_ResetTimeout();
+            }
+            break;
+            
+        case KEY_8:
+            /* Tecla 8 - Salvar Memória */
+            Memoria_Salvar();
+            Refletor_BlinkPattern(1, REFLETOR_BLINK_LONGO);
+            break;
+            
+        case KEY_9:
+            /* Tecla 9 - Executar Memória */
+            if (memoriaValida)
+            {
+                Memoria_Executar();
+                Refletor_BlinkPattern(2, REFLETOR_BLINK_RAPIDO);
+            }
+            break;
+            
+        case KEY_A:
+            /* Tecla A - Função customizável */
+            /* TODO: Definir função */
+            break;
+            
+        case KEY_B:
+            /* Tecla B - Função customizável */
+            /* TODO: Definir função */
+            break;
+            
+        case KEY_C:
+            /* Tecla C - Parada de Emergência */
+            systemState = SYSTEM_EMERGENCY_STOP;
+            Rele_StopAll();
+            break;
+            
+        default:
+            break;
+    }
 }
 
 /* ============================================================================
