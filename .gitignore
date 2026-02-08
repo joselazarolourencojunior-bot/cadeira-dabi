@@ -1,0 +1,29 @@
+# Build directories
+build/
+*.o
+*.rel
+*.lst
+*.asm
+*.sym
+*.rst
+*.map
+*.mem
+*.lk
+*.ihx
+*.hex
+*.bin
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log
