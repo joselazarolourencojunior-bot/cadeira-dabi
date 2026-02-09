@@ -20,10 +20,12 @@ Os relés são acionados em **nível ALTO (HIGH)** e todos os pinos escolhidos p
 | **Relé Desce Encosto** | GPIOD | PD1 | True Open-Drain | Ativa motor para descer encosto |
 | **Relé Refletor** | GPIOD | PD2 | True Open-Drain | Liga/Desliga refletor (toggle) |
 
-### 🔧 **Configuração GPIO:**
+### 🔧 Configuração GPIO
+
 ```c
 GPIO_Init(RELE_XXX_PORT, RELE_XXX_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
 ```
+
 - **OUT_OD**: Open-Drain (coletor aberto)
 - **LOW_FAST**: Inicializa em LOW (relé desligado), velocidade rápida
 
@@ -35,7 +37,8 @@ GPIO_Init(RELE_XXX_PORT, RELE_XXX_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
 |--------|-------|------|------|-----------|
 | **LED Watchdog** | GPIOE | PE5 | Push-Pull | Pisca a cada 500ms indicando sistema ativo |
 
-### 🔧 **Configuração GPIO:**
+### 🔧 Configuração GPIO LED
+
 ```c
 GPIO_Init(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
 ```
@@ -48,55 +51,46 @@ Todos os botões são **ativos em LOW** (pressionado = GND).
 
 | Função | Porta | Pino | Descrição |
 |--------|-------|------|-----------|
-| **BTN Sobe Assento** | GPIOB | PB0 | Botão para subir assento (manual) |
-| **BTN Desce Assento** | GPIOB | PB1 | Botão para descer assento (manual) |
-| **BTN Sobe Encosto** | GPIOB | PB2 | Botão para subir encosto (manual) |
-| **BTN Desce Encosto** | GPIOB | PB3 | Botão para descer encosto (manual) |
 | **BTN Refletor** | GPIOB | PB4 | Botão toggle refletor (pressiona liga/desliga) |
-| **BTN Volta a Zero** | GPIOB | PB5 | Movimento automático para posição inicial |
-| **BTN Posição de Trabalho** | GPIOB | PB6 | Movimento automático para posição de trabalho |
-| **BTN Parada Emergência** | GPIOB | PB7 | Botão de emergência (para tudo) |
+| **BTN Volta a Zero (VZ)** | GPIOB | PB5 | Movimento automático para posição inicial |
+| **BTN Posição de Trabalho (PT)** | GPIOB | PB6 | Movimento automático para posição de trabalho |
 
-### 🔧 **Configuração GPIO:**
+### 🔧 Configuração GPIO Botões
+
 ```c
 GPIO_Init(BTN_PORT, BTN_XXX_PIN, GPIO_MODE_IN_PU_NO_IT);
 ```
+
 - **IN_PU**: Entrada com pull-up interno
 - **NO_IT**: Sem interrupção externa
 
-### 📝 **Leitura de Botão:**
+### 📝 Leitura de Botão
+
 ```c
 uint8_t buttonPressed = !GPIO_ReadInputPin(BTN_PORT, pin); // Inverte por causa do pull-up
 ```
 
 ---
 
-## 🛡️ ENTRADAS - SENSORES DE LIMITE (com Pull-Up Interno)
+## 🔄 MATRIZ DE CHAVEAMENTO (Preparado para M1, M2, M3)
 
-Sensores tipo **fim de curso**, ativos em **LOW** (acionado = GND).
+Sistema preparado para receber matriz de chaveamento com 3 saídas digitais.
 
 | Função | Porta | Pino | Descrição |
 |--------|-------|------|-----------|
-| **Limite Superior Assento** | GPIOC | PC3 | Sensor fim de curso superior assento |
-| **Limite Inferior Assento** | GPIOC | PC4 | Sensor fim de curso inferior assento |
-| **Limite Superior Encosto** | GPIOA | PA1 | Sensor fim de curso superior encosto |
-| **Limite Inferior Encosto** | GPIOA | PA2 | Sensor fim de curso inferior encosto |
+| **M1** | A definir | - | Saída de chaveamento 1 |
+| **M2** | A definir | - | Saída de chaveamento 2 |
+| **M3** | A definir | - | Saída de chaveamento 3 |
 
-### 🔧 **Configuração GPIO:**
-```c
-GPIO_Init(LIMIT_XXX_PORT, LIMIT_XXX_PIN, GPIO_MODE_IN_PU_NO_IT);
-```
+### 📝 Nota Matriz
 
-### 📝 **Leitura de Sensor:**
-```c
-uint8_t limitAtingido = !GPIO_ReadInputPin(LIMIT_XXX_PORT, LIMIT_XXX_PIN); // Inverte
-```
+A implementação detalhada da matriz será configurada conforme especificação do hardware.
 
 ---
 
 ## 📊 DIAGRAMA DE CONEXÃO
 
-```
+```text
 ┌──────────────────────────────────────────────────────────┐
 │          STM8S105K4T6C (LQFP32)                         │
 ├──────────────────────────────────────────────────────────┤
@@ -116,24 +110,9 @@ uint8_t limitAtingido = !GPIO_ReadInputPin(LIMIT_XXX_PORT, LIMIT_XXX_PIN); // In
 │  └─────────────┘                                         │
 │                                                           │
 │  ┌─────────────┐                                         │
-│  │  PORTA B    │  PB0 <── BTN Sobe Assento              │
-│  │  (Pull-Up)  │  PB1 <── BTN Desce Assento             │
-│  │             │  PB2 <── BTN Sobe Encosto              │
-│  │             │  PB3 <── BTN Desce Encosto             │
-│  │             │  PB4 <── BTN Refletor (Toggle)         │
-│  │             │  PB5 <── BTN Volta a Zero              │
-│  │             │  PB6 <── BTN Posição de Trabalho       │
-│  │             │  PB7 <── BTN Parada Emergência         │
-│  └─────────────┘                                         │
-│                                                           │
-│  ┌─────────────┐                                         │
-│  │  PORTA C    │  PC3 <── Limite Superior Assento       │
-│  │  (Pull-Up)  │  PC4 <── Limite Inferior Assento       │
-│  └─────────────┘                                         │
-│                                                           │
-│  ┌─────────────┐                                         │
-│  │  PORTA A    │  PA1 <── Limite Superior Encosto       │
-│  │  (Pull-Up)  │  PA2 <── Limite Inferior Encosto       │
+│  │  PORTA B    │  PB4 <── BTN Refletor (Toggle)         │
+│  │  (Pull-Up)  │  PB5 <── BTN Volta a Zero (VZ)         │
+│  │             │  PB6 <── BTN Posição de Trabalho (PT)  │
 │  └─────────────┘                                         │
 │                                                           │
 └──────────────────────────────────────────────────────────┘
@@ -144,26 +123,31 @@ uint8_t limitAtingido = !GPIO_ReadInputPin(LIMIT_XXX_PORT, LIMIT_XXX_PIN); // In
 ## ⚙️ FUNCIONALIDADES DO SISTEMA
 
 ### 🔄 Controle de Relés com Interlock
+
 - **Interlock de segurança**: Não permite sobe e desce simultâneos
 - **Delay de 100ms** entre comandos opostos para proteger relés
 - **Timeout de 30 segundos** de operação contínua
 
 ### 💡 LED Watchdog
+
 - **Pisca a cada 500ms** quando sistema está ativo
 - Indica que o microcontrolador está funcionando corretamente
 
 ### 🎚️ Controle do Refletor
+
 - **Modo Toggle**: Aperta liga, aperta desliga
 - **Debounce de 200ms** para evitar acionamentos múltiplos
 - **Independente dos movimentos** (não desliga com Stop All)
 
 ### 🛡️ Sistema de Segurança
-1. **Parada de Emergência**: Desliga todos os relés (exceto refletor)
-2. **Sensores de Limite**: Para movimento ao atingir fim de curso
-3. **Timeout**: Desliga após 30 segundos contínuos
+
+1. **Parada de Emergência**: Durante VZ ou PT, qualquer botão pressionado para TUDO imediatamente
+2. **Limite Virtual (Encoder por Tempo)**: Sistema calcula posição por tempo de operação
+3. **Timeout**: Movimentos automáticos duram 30 segundos fixos
 4. **Debounce**: 50ms em todos os botões
 
 ### 🔀 Máquina de Estados
+
 - **IDLE**: Aguardando comando
 - **MOVENDO_ASSENTO**: Movimento manual do assento ativo
 - **MOVENDO_ENCOSTO**: Movimento manual do encosto ativo
@@ -174,64 +158,75 @@ uint8_t limitAtingido = !GPIO_ReadInputPin(LIMIT_XXX_PORT, LIMIT_XXX_PIN); // In
 
 ### 🎯 Funções Automáticas
 
-#### **Volta a Zero - VZ (PB5)**
+#### Volta a Zero - VZ (PB5)
+
 Pressione uma vez e o sistema executa:
+
 - **Ação**: Aciona Desce Assento + Sobe Encosto simultaneamente
 - **Duração**: 30 segundos fixos
-- **Parada de emergência**: Qualquer botão pressionado durante o movimento = PARA TUDO
-- **Indicação**: Sistema retorna a IDLE após 30s ou ao atingir limites
+- **Parada de emergência**: Qualquer botão pressionado durante o movimento = PARA TUDO e desliga todos os relés
+- **Indicação**: Sistema retorna a IDLE após 30s
 - **Efeito**: Libera o botão PT para ser usado
+- **Limite**: Calculado por tempo (encoder virtual)
 
-#### **Posição de Trabalho - PT (PB6)**
+#### Posição de Trabalho - PT (PB6)
+
 Pressione uma vez e o sistema executa:
+
 - **Ação**: Aciona Sobe Assento + Desce Encosto simultaneamente
 - **Duração**: 30 segundos fixos
-- **Parada de emergência**: Qualquer botão pressionado durante o movimento = PARA TUDO
-- **Indicação**: Sistema retorna a IDLE após 30s ou ao atingir limites
+- **Parada de emergência**: Qualquer botão pressionado durante o movimento = PARA TUDO e desliga todos os relés
+- **Indicação**: Sistema retorna a IDLE após 30s
 - **⚠️ PRÉ-REQUISITO**: Só funciona se VZ foi executado completamente antes!
+- **Limite**: Calculado por tempo (encoder virtual)
 
 ### 🔄 Sequência de Operação Obrigatória
 
-```
+```text
 1. Ligar sistema → PT bloqueado
 2. Pressionar VZ → Executa ciclo completo (30s) → PT liberado
 3. Pressionar PT → Executa ciclo completo (30s) → PT bloqueado novamente
 4. Para usar PT novamente → Executar VZ primeiro
 ```
 
-**Importante**: 
-- Qualquer movimento manual (botões PB0-PB3) bloqueia PT novamente
+**Importante**:
+
+- Pressionar qualquer botão durante VZ ou PT = EMERGÊNCIA (para tudo, desliga todos os relés)
 - Parada de emergência durante VZ ou PT bloqueia PT
 - É necessário completar VZ toda vez antes de usar PT
+- **NÃO existe botão físico de emergência** - emergência é automática ao pressionar qualquer botão durante operação automática
 
 ---
 
 ## 📝 EXEMPLO DE USO NO CÓDIGO
 
-### Ativar Relé:
+### Ativar Relé
+
 ```c
 Rele_SobeAssento(RELE_ON);   // Liga relé
 Rele_SobeAssento(RELE_OFF);  // Desliga relé
 ```
 
-### Toggle Refletor:
+### Toggle Refletor
+
 ```c
 Rele_ToggleRefletor();  // Liga se estiver desligado, desliga se estiver ligado
 ```
 
-### Verificar Botão:
+### Verificar Botão
+
 ```c
 uint8_t buttons = UI_ReadButtons();
-if (buttons & BTN_SOBE_ASSENTO) {
+if (buttons & BTN_REFLETOR) {
     // Botão pressionado
 }
 ```
 
-### Verificar Limite:
+### Posição Virtual (Encoder por Tempo)
+
 ```c
-if (Safety_CheckLimitAssentoSup()) {
-    // Limite superior atingido!
-}
+// Sistema calcula posição baseado no tempo de operação
+// Não existem sensores físicos de limite
 ```
 
 ---
@@ -242,11 +237,14 @@ if (Safety_CheckLimitAssentoSup()) {
 ✅ **Pull-up interno em botões** - Não precisa resistor externo  
 ✅ **Debounce por software** - Elimina ruído de contatos mecânicos  
 ✅ **Interlock de segurança** - Previne comando simultâneo de opostos  
-✅ **Timeout automático** - Proteção contra travamento  
+✅ **Timeout automático** - Proteção contra travamento (30s fixos)  
 ✅ **Watchdog LED visual** - Monitoramento de funcionamento  
+✅ **Encoder virtual por tempo** - Calcula posição sem sensores físicos  
+✅ **Emergência automática** - Qualquer botão durante VZ/PT para tudo  
 
 ---
 
 **Desenvolvido por:** Lazaro  
 **Hardware:** STM8S105K4T6C (16MHz HSI, 16KB Flash, 2KB RAM)  
-**Compilador:** SDCC (Small Device C Compiler)  
+**Compilador:** SDCC (Small Device C Compiler)
+

@@ -1,5 +1,15 @@
 # Matriz de Teclado 3x4
 
+⚠️ **ATENÇÃO: DOCUMENTAÇÃO LEGADO**
+
+**Este documento descreve a implementação digital original (descontinuada).**
+
+**Para a implementação atual com ADC (Analógico-Digital), consulte:**
+- 📘 [MATRIZ_TECLADO_ADC.md](MATRIZ_TECLADO_ADC.md) - Documentação completa do sistema ADC
+- 📐 [CIRCUITO_ADC_TECLADO.md](CIRCUITO_ADC_TECLADO.md) - Diagramas e circuitos
+
+---
+
 ## Descrição
 Sistema de leitura de matriz de teclado 3x4 (12 teclas) para controle da cadeira odontológica.
 

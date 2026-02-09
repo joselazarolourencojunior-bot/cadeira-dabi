@@ -25,6 +25,9 @@
 |----------------------------|-------------------------------|------------------|
 | [HARDWARE.md](HARDWARE.md) | Especificações completas      | Montagem física  |
 | [BOM.md](BOM.md)           | Lista de materiais e custos   | Compras          |
+| [MATRIZ_TECLADO.md](MATRIZ_TECLADO.md) | Matriz de teclado digital (legado) | Referência histórica |
+| [MATRIZ_TECLADO_ADC.md](MATRIZ_TECLADO_ADC.md) | ⭐ Matriz de teclado com ADC | Sistema atual com leitura analógica |
+| [CIRCUITO_ADC_TECLADO.md](CIRCUITO_ADC_TECLADO.md) | Diagramas e circuitos ADC | Design de hardware |
 
 ## 🆘 Suporte e Solução de Problemas
 
@@ -60,6 +63,10 @@ Cadeira_ML/
 │   ├── 📄 RESUMO_VISUAL.md        ← Mapa visual
 │   ├── 📄 ARQUIVO_UNICO_VS_MULTIPLOS.md  ← Comparação
 │   ├── 📄 BOM.md                  ← Lista de materiais
+│   ├── 📄 MATRIZ_TECLADO.md       ← Matriz digital (legado)
+│   ├── 📄 MATRIZ_TECLADO_ADC.md   ⭐ Matriz ADC (atual)
+│   ├── 📄 CIRCUITO_ADC_TECLADO.md ← Diagramas e circuitos ADC
+│   ├── 📄 ENCODER_VIRTUAL_MEMORIA.md  ← Encoder virtual
 │   └── 📄 TROUBLESHOOTING.md      ← Solução de problemas
 │
 ├── 📁 build/                      ← Arquivos compilados (gerado)

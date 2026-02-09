@@ -40,48 +40,79 @@
 
 /* Configurações dos Botões (com pull-up interno) */
 #define BTN_PORT                    GPIOB
-#define BTN_SOBE_ASSENTO_PIN        GPIO_PIN_0
-#define BTN_DESCE_ASSENTO_PIN       GPIO_PIN_1
-#define BTN_SOBE_ENCOSTO_PIN        GPIO_PIN_2
-#define BTN_DESCE_ENCOSTO_PIN       GPIO_PIN_3
+/* NOTA: Botões manuais PB0-PB3 NÃO existem fisicamente no hardware */
+/* #define BTN_SOBE_ASSENTO_PIN        GPIO_PIN_0 */
+/* #define BTN_DESCE_ASSENTO_PIN       GPIO_PIN_1 */
+/* #define BTN_SOBE_ENCOSTO_PIN        GPIO_PIN_2 */
+/* #define BTN_DESCE_ENCOSTO_PIN       GPIO_PIN_3 */
 #define BTN_REFLETOR_PIN            GPIO_PIN_4
 #define BTN_VOLTA_ZERO_PIN          GPIO_PIN_5
 #define BTN_POSICAO_TRABALHO_PIN    GPIO_PIN_6
-#define BTN_EMERGENCIA_PIN          GPIO_PIN_7
+/* NOTA: Botão de emergência PB7 NÃO existe fisicamente */
+/* A emergência funciona ao pressionar QUALQUER botão durante VZ ou PT */
+/* #define BTN_EMERGENCIA_PIN          GPIO_PIN_7 */
 
-#define BTN_SOBE_ASSENTO            (1 << 0)
-#define BTN_DESCE_ASSENTO           (1 << 1)
-#define BTN_SOBE_ENCOSTO            (1 << 2)
-#define BTN_DESCE_ENCOSTO           (1 << 3)
+/* #define BTN_SOBE_ASSENTO            (1 << 0) */
+/* #define BTN_DESCE_ASSENTO           (1 << 1) */
+/* #define BTN_SOBE_ENCOSTO            (1 << 2) */
+/* #define BTN_DESCE_ENCOSTO           (1 << 3) */
 #define BTN_REFLETOR                (1 << 4)
 #define BTN_VOLTA_ZERO              (1 << 5)
 #define BTN_POSICAO_TRABALHO        (1 << 6)
-#define BTN_EMERGENCIA              (1 << 7)
+/* #define BTN_EMERGENCIA              (1 << 7) */
 #define BTN_DEBOUNCE_TIME           50
 
-/* Configurações dos Sensores de Limite (com pull-up interno) */
-#define LIMIT_ASSENTO_SUP_PORT      GPIOC
-#define LIMIT_ASSENTO_SUP_PIN       GPIO_PIN_3
-#define LIMIT_ASSENTO_INF_PORT      GPIOC
-#define LIMIT_ASSENTO_INF_PIN       GPIO_PIN_4
-#define LIMIT_ENCOSTO_SUP_PORT      GPIOA
-#define LIMIT_ENCOSTO_SUP_PIN       GPIO_PIN_1
-#define LIMIT_ENCOSTO_INF_PORT      GPIOA
-#define LIMIT_ENCOSTO_INF_PIN       GPIO_PIN_2
+/* NOTA: Sensores de limite físicos NÃO existem */
+/* O sistema usa ENCODER VIRTUAL POR TEMPO para controle de posição */
+/* #define LIMIT_ASSENTO_SUP_PORT      GPIOC */
+/* #define LIMIT_ASSENTO_SUP_PIN       GPIO_PIN_3 */
+/* #define LIMIT_ASSENTO_INF_PORT      GPIOC */
+/* #define LIMIT_ASSENTO_INF_PIN       GPIO_PIN_4 */
+/* #define LIMIT_ENCOSTO_SUP_PORT      GPIOA */
+/* #define LIMIT_ENCOSTO_SUP_PIN       GPIO_PIN_1 */
+/* #define LIMIT_ENCOSTO_INF_PORT      GPIOA */
+/* #define LIMIT_ENCOSTO_INF_PIN       GPIO_PIN_2 */
 
-/* Configurações da Matriz de Teclado 3x4 */
+/* ============================================================================
+   MATRIZ DE CHAVEAMENTO - M1, M2, M3 (PREPARADO PARA IMPLEMENTAÇÃO FUTURA)
+   ============================================================================ */
+/* NOTA: Definir pinos conforme especificação do hardware */
+/* #define MATRIZ_M1_PORT             GPIOx */
+/* #define MATRIZ_M1_PIN              GPIO_PIN_x */
+/* #define MATRIZ_M2_PORT             GPIOx */
+/* #define MATRIZ_M2_PIN              GPIO_PIN_x */
+/* #define MATRIZ_M3_PORT             GPIOx */
+/* #define MATRIZ_M3_PIN              GPIO_PIN_x */
+
+/* Configurações da Matriz de Teclado 3x4 com ADC */
 /* Linhas (Outputs - Scan) */
 #define KEYPAD_ROW_PORT             GPIOD
 #define KEYPAD_ROW1_PIN             GPIO_PIN_3
 #define KEYPAD_ROW2_PIN             GPIO_PIN_4
 #define KEYPAD_ROW3_PIN             GPIO_PIN_5
 
-/* Colunas (Inputs com pull-up) */
-#define KEYPAD_COL_PORT             GPIOF
-#define KEYPAD_COL1_PIN             GPIO_PIN_4
-#define KEYPAD_COL2_PIN             GPIO_PIN_5
-#define KEYPAD_COL3_PIN             GPIO_PIN_6
-#define KEYPAD_COL4_PIN             GPIO_PIN_7
+/* Colunas (Inputs Analógicos - ADC) */
+/* Usando 4 canais ADC para detectar níveis de tensão diferentes */
+#define KEYPAD_COL1_PORT            GPIOB
+#define KEYPAD_COL1_PIN             GPIO_PIN_0
+#define KEYPAD_COL1_ADC_CHANNEL     ADC1_CHANNEL_0  /* AIN0 */
+
+#define KEYPAD_COL2_PORT            GPIOB
+#define KEYPAD_COL2_PIN             GPIO_PIN_1
+#define KEYPAD_COL2_ADC_CHANNEL     ADC1_CHANNEL_1  /* AIN1 */
+
+#define KEYPAD_COL3_PORT            GPIOB
+#define KEYPAD_COL3_PIN             GPIO_PIN_2
+#define KEYPAD_COL3_ADC_CHANNEL     ADC1_CHANNEL_2  /* AIN2 */
+
+#define KEYPAD_COL4_PORT            GPIOB
+#define KEYPAD_COL4_PIN             GPIO_PIN_3
+#define KEYPAD_COL4_ADC_CHANNEL     ADC1_CHANNEL_3  /* AIN3 */
+
+/* Configurações do ADC para Matriz de Teclado */
+#define KEYPAD_ADC_RESOLUTION       1024    /* Resolução 10-bit */
+#define KEYPAD_ADC_VREF_MV          5000    /* Tensão de referência 5V (em mV) */
+#define KEYPAD_ADC_TOLERANCE        50      /* Tolerância para detecção (em unidades ADC) */
 
 /* Mapeamento das Teclas (3 linhas x 4 colunas = 12 teclas) */
 /*
@@ -110,6 +141,33 @@
 #define KEYPAD_DEBOUNCE_TIME    50  /* ms - tempo de debounce */
 #define KEYPAD_ROWS             3
 #define KEYPAD_COLS             4
+
+/* Tabela de Níveis ADC para Detecção de Teclas
+ * Cada coluna pode ter até 4 teclas em paralelo com resistores diferentes
+ * Os valores representam níveis ADC esperados para cada tecla (0-1023)
+ * 
+ * Exemplo de circuito com resistores:
+ *   VCC (5V) ----[R1]----+----[Tecla1]----GND
+ *                        |
+ *                        +----[R2+Tecla2]----GND
+ *                        |
+ *                        +----[R3+Tecla3]----GND
+ *                        |
+ *                        +----ADC_PIN
+ * 
+ * AJUSTE ESTES VALORES CONFORME SEU CIRCUITO!
+ */
+#define KEYPAD_ADC_LEVELS       4   /* Número máximo de níveis por coluna */
+
+/* Níveis ADC para cada tecla em cada linha/coluna
+ * Formato: keypadAdcThresholds[linha][coluna] = valor_ADC_esperado
+ */
+static const uint16_t keypadAdcThresholds[KEYPAD_ROWS][KEYPAD_COLS] = {
+    /* COL1    COL2    COL3    COL4 */
+    { 205,    205,    205,    205 },  /* ROW1: Teclas 1, 2, 3, A - ~1V (R1=1K)   */
+    { 409,    409,    409,    409 },  /* ROW2: Teclas 4, 5, 6, B - ~2V (R2=2K)   */
+    { 614,    614,    614,    614 }   /* ROW3: Teclas 7, 8, 9, C - ~3V (R3=3K)   */
+};
 
 /* Configurações de Temporização */
 #define WATCHDOG_BLINK_TIME     500  /* ms - pisca a cada 500ms */
@@ -293,12 +351,14 @@ void Memoria_LoadFromEEPROM(void);
 void Memoria_SaveToEEPROM(void);
 void Refletor_BlinkPattern(uint8_t count, uint16_t duration);
 
-/* Matriz de Teclado */
+/* Matriz de Teclado com ADC */
 void Keypad_Init(void);
+void Keypad_ADC_Init(void);
+uint16_t Keypad_ReadADC(ADC1_Channel_TypeDef channel);
 uint8_t Keypad_Scan(void);
 uint8_t Keypad_GetKey(void);
 void Keypad_ProcessKey(uint8_t key);
-static uint8_t Keypad_ReadColumn(void);
+static uint8_t Keypad_AnalyzeADC(uint16_t adcValue, uint8_t row, uint8_t col);
 
 /* Segurança */
 void Safety_Init(void);
@@ -421,7 +481,11 @@ void System_Process(void)
     switch (systemState)
     {
         case SYSTEM_IDLE:
-            /* Botão Sobe Assento */
+            /* ========== MOVIMENTO MANUAL - NÃO EXISTE NO HARDWARE ========== */
+            /* Botões PB0-PB3 não existem fisicamente */
+            
+            /* Botão Sobe Assento - NÃO EXISTE */
+            /*
             if (buttons & BTN_SOBE_ASSENTO)
             {
                 if (!Safety_CheckLimitAssentoSup())
@@ -431,7 +495,10 @@ void System_Process(void)
                     Safety_ResetTimeout();
                 }
             }
-            /* Botão Desce Assento */
+            */
+            
+            /* Botão Desce Assento - NÃO EXISTE */
+            /*
             else if (buttons & BTN_DESCE_ASSENTO)
             {
                 if (!Safety_CheckLimitAssentoInf())
@@ -441,7 +508,10 @@ void System_Process(void)
                     Safety_ResetTimeout();
                 }
             }
-            /* Botão Sobe Encosto */
+            */
+            
+            /* Botão Sobe Encosto - NÃO EXISTE */
+            /*
             else if (buttons & BTN_SOBE_ENCOSTO)
             {
                 if (!Safety_CheckLimitEncostoSup())
@@ -451,7 +521,10 @@ void System_Process(void)
                     Safety_ResetTimeout();
                 }
             }
-            /* Botão Desce Encosto */
+            */
+            
+            /* Botão Desce Encosto - NÃO EXISTE */
+            /*
             else if (buttons & BTN_DESCE_ENCOSTO)
             {
                 if (!Safety_CheckLimitEncostoInf())
@@ -461,6 +534,10 @@ void System_Process(void)
                     Safety_ResetTimeout();
                 }
             }
+            */
+            
+            /* ========== BOTÕES QUE EXISTEM NO HARDWARE ========== */
+            
             /* Botão Refletor - agora processado por UI_ProcessRefletorLongPress() */
             
             /* Botão Volta a Zero - Movimento automático por 30 segundos */
@@ -489,23 +566,32 @@ void System_Process(void)
             }
             break;
             
+        /* ========== ESTADOS DE MOVIMENTO MANUAL - NÃO USADOS (hardware não tem botões manuais) ========== */
         case SYSTEM_MOVENDO_ASSENTO:
         case SYSTEM_MOVENDO_ENCOSTO:
-            /* Para quando soltar o botão */
+            /* Esta lógica não será executada pois os botões não existem */
+            /* Mantida para compatibilidade de código */
+            /*
+            // Para quando soltar o botão
             if (!(buttons & (BTN_SOBE_ASSENTO | BTN_DESCE_ASSENTO | BTN_SOBE_ENCOSTO | BTN_DESCE_ENCOSTO)))
             {
                 Rele_StopAll();
                 systemState = SYSTEM_IDLE;
-                vzCompletoCiclo = 0; /* Movimento manual - requer VZ antes de PT */
+                vzCompletoCiclo = 0; // Movimento manual - requer VZ antes de PT
             }
             
-            /* Verifica limites durante movimento */
+            // Verifica limites durante movimento
             if (Safety_FullCheck())
             {
                 Rele_StopAll();
                 systemState = SYSTEM_IDLE;
-                vzCompletoCiclo = 0; /* Movimento manual - requer VZ antes de PT */
+                vzCompletoCiclo = 0; // Movimento manual - requer VZ antes de PT
             }
+            */
+            
+            /* Força volta para IDLE se entrar aqui por algum motivo */
+            Rele_StopAll();
+            systemState = SYSTEM_IDLE;
             break;
             
         case SYSTEM_VOLTA_ZERO:
@@ -734,32 +820,34 @@ void GPIO_Config(void)
     GPIO_Init(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
     
     /* ========== ENTRADAS - BOTÕES (com pull-up interno) ========== */
-    GPIO_Init(BTN_PORT, BTN_SOBE_ASSENTO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_DESCE_ASSENTO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_SOBE_ENCOSTO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_DESCE_ENCOSTO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_REFLETOR_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_VOLTA_ZERO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_POSICAO_TRABALHO_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(BTN_PORT, BTN_EMERGENCIA_PIN, GPIO_MODE_IN_PU_NO_IT);
+    /* NOTA: Apenas 3 botões físicos existem no hardware (PB4, PB5, PB6) */
+    /* GPIO_Init(BTN_PORT, BTN_SOBE_ASSENTO_PIN, GPIO_MODE_IN_PU_NO_IT);    // PB0 - NÃO EXISTE */
+    /* GPIO_Init(BTN_PORT, BTN_DESCE_ASSENTO_PIN, GPIO_MODE_IN_PU_NO_IT);   // PB1 - NÃO EXISTE */
+    /* GPIO_Init(BTN_PORT, BTN_SOBE_ENCOSTO_PIN, GPIO_MODE_IN_PU_NO_IT);    // PB2 - NÃO EXISTE */
+    /* GPIO_Init(BTN_PORT, BTN_DESCE_ENCOSTO_PIN, GPIO_MODE_IN_PU_NO_IT);   // PB3 - NÃO EXISTE */
+    GPIO_Init(BTN_PORT, BTN_REFLETOR_PIN, GPIO_MODE_IN_PU_NO_IT);          /* PB4 - Refletor */
+    GPIO_Init(BTN_PORT, BTN_VOLTA_ZERO_PIN, GPIO_MODE_IN_PU_NO_IT);        /* PB5 - Volta Zero */
+    GPIO_Init(BTN_PORT, BTN_POSICAO_TRABALHO_PIN, GPIO_MODE_IN_PU_NO_IT);  /* PB6 - Posição Trabalho */
+    /* GPIO_Init(BTN_PORT, BTN_EMERGENCIA_PIN, GPIO_MODE_IN_PU_NO_IT);      // PB7 - NÃO EXISTE */
     
-    /* ========== ENTRADAS - SENSORES DE LIMITE (com pull-up interno) ========== */
-    GPIO_Init(LIMIT_ASSENTO_SUP_PORT, LIMIT_ASSENTO_SUP_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(LIMIT_ASSENTO_INF_PORT, LIMIT_ASSENTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(LIMIT_ENCOSTO_SUP_PORT, LIMIT_ENCOSTO_SUP_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(LIMIT_ENCOSTO_INF_PORT, LIMIT_ENCOSTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT);
+    /* ========== SENSORES DE LIMITE - NÃO EXISTEM NO HARDWARE ========== */
+    /* NOTA: Sistema usa ENCODER VIRTUAL POR TEMPO - sem sensores físicos */
+    /* GPIO_Init(LIMIT_ASSENTO_SUP_PORT, LIMIT_ASSENTO_SUP_PIN, GPIO_MODE_IN_PU_NO_IT); // PC3 */
+    /* GPIO_Init(LIMIT_ASSENTO_INF_PORT, LIMIT_ASSENTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT); // PC4 */
+    /* GPIO_Init(LIMIT_ENCOSTO_SUP_PORT, LIMIT_ENCOSTO_SUP_PIN, GPIO_MODE_IN_PU_NO_IT); // PA1 */
+    /* GPIO_Init(LIMIT_ENCOSTO_INF_PORT, LIMIT_ENCOSTO_INF_PIN, GPIO_MODE_IN_PU_NO_IT); // PA2 */
     
-    /* ========== MATRIZ DE TECLADO 3x4 ========== */
-    /* Linhas - Saídas (inicialmente HIGH) */
+    /* ========== MATRIZ DE TECLADO 3x4 COM ADC ========== */
+    /* Linhas - Saídas digitais (inicialmente HIGH) */
     GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
     GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
     GPIO_Init(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN, GPIO_MODE_OUT_PP_HIGH_FAST);
     
-    /* Colunas - Entradas com pull-up */
-    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL1_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL2_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL3_PIN, GPIO_MODE_IN_PU_NO_IT);
-    GPIO_Init(KEYPAD_COL_PORT, KEYPAD_COL4_PIN, GPIO_MODE_IN_PU_NO_IT);
+    /* Colunas - Entradas analógicas (ADC) - Sem pull-up */
+    GPIO_Init(KEYPAD_COL1_PORT, KEYPAD_COL1_PIN, GPIO_MODE_IN_FL_NO_IT);
+    GPIO_Init(KEYPAD_COL2_PORT, KEYPAD_COL2_PIN, GPIO_MODE_IN_FL_NO_IT);
+    GPIO_Init(KEYPAD_COL3_PORT, KEYPAD_COL3_PIN, GPIO_MODE_IN_FL_NO_IT);
+    GPIO_Init(KEYPAD_COL4_PORT, KEYPAD_COL4_PIN, GPIO_MODE_IN_FL_NO_IT);
 }
 
 /**
@@ -1300,18 +1388,22 @@ uint8_t UI_ReadButtons(void)
     uint8_t buttons = 0;
     
     /* Lê cada botão com debounce (botões ativos em LOW) */
-    if (UI_DebounceButton(BTN_SOBE_ASSENTO_PIN, 0))
-        buttons |= BTN_SOBE_ASSENTO;
+    /* NOTA: Apenas 3 botões físicos existem (PB4, PB5, PB6) */
+    
+    /* Botões de movimento manual - NÃO EXISTEM NO HARDWARE */
+    /* if (UI_DebounceButton(BTN_SOBE_ASSENTO_PIN, 0))
+        buttons |= BTN_SOBE_ASSENTO; */
         
-    if (UI_DebounceButton(BTN_DESCE_ASSENTO_PIN, 1))
-        buttons |= BTN_DESCE_ASSENTO;
+    /* if (UI_DebounceButton(BTN_DESCE_ASSENTO_PIN, 1))
+        buttons |= BTN_DESCE_ASSENTO; */
         
-    if (UI_DebounceButton(BTN_SOBE_ENCOSTO_PIN, 2))
-        buttons |= BTN_SOBE_ENCOSTO;
+    /* if (UI_DebounceButton(BTN_SOBE_ENCOSTO_PIN, 2))
+        buttons |= BTN_SOBE_ENCOSTO; */
         
-    if (UI_DebounceButton(BTN_DESCE_ENCOSTO_PIN, 3))
-        buttons |= BTN_DESCE_ENCOSTO;
+    /* if (UI_DebounceButton(BTN_DESCE_ENCOSTO_PIN, 3))
+        buttons |= BTN_DESCE_ENCOSTO; */
         
+    /* Botões que existem fisicamente */
     if (UI_DebounceButton(BTN_REFLETOR_PIN, 4))
         buttons |= BTN_REFLETOR;
         
@@ -1320,9 +1412,11 @@ uint8_t UI_ReadButtons(void)
         
     if (UI_DebounceButton(BTN_POSICAO_TRABALHO_PIN, 6))
         buttons |= BTN_POSICAO_TRABALHO;
-        
-    if (UI_DebounceButton(BTN_EMERGENCIA_PIN, 7))
-        buttons |= BTN_EMERGENCIA;
+    
+    /* Botão de emergência - NÃO EXISTE NO HARDWARE */
+    /* Emergência = Qualquer botão durante VZ ou PT */
+    /* if (UI_DebounceButton(BTN_EMERGENCIA_PIN, 7))
+        buttons |= BTN_EMERGENCIA; */
     
     return buttons;
 }
@@ -1378,18 +1472,16 @@ void Safety_Init(void)
  * @brief  Verifica se o botão de emergência está acionado
  * @param  None
  * @retval uint8_t: 1 se emergência ativa, 0 caso contrário
+ * @note   BOTÃO DE EMERGÊNCIA NÃO EXISTE NO HARDWARE
+ *         Emergência = Qualquer botão pressionado durante VZ ou PT
  */
 uint8_t Safety_CheckEmergencyStop(void)
 {
-    /* Botão de emergência ativo em LOW (pull-up) */
-    uint8_t emergencyPin = !GPIO_ReadInputPin(BTN_PORT, BTN_EMERGENCIA_PIN);
+    /* Botão físico de emergência não existe */
+    /* uint8_t emergencyPin = !GPIO_ReadInputPin(BTN_PORT, BTN_EMERGENCIA_PIN); */
     
-    if (emergencyPin)
-    {
-        emergencyStopActive = 1;
-        return 1;
-    }
-    
+    /* Emergência é tratada na lógica de PT e VZ quando qualquer botão é pressionado */
+    /* Esta função mantida para compatibilidade - sempre retorna 0 */
     return 0;
 }
 
@@ -1397,44 +1489,56 @@ uint8_t Safety_CheckEmergencyStop(void)
  * @brief  Verifica sensor limite superior do assento
  * @param  None
  * @retval uint8_t: 1 se limite atingido, 0 caso contrário
+ * @note   SENSORES DE LIMITE NÃO EXISTEM NO HARDWARE
+ *         Sistema usa ENCODER VIRTUAL POR TEMPO
  */
 uint8_t Safety_CheckLimitAssentoSup(void)
 {
-    /* Sensor ativo em LOW (pull-up) */
-    return (!GPIO_ReadInputPin(LIMIT_ASSENTO_SUP_PORT, LIMIT_ASSENTO_SUP_PIN));
+    /* Sensor físico não existe - retorna sempre 0 */
+    /* return (!GPIO_ReadInputPin(LIMIT_ASSENTO_SUP_PORT, LIMIT_ASSENTO_SUP_PIN)); */
+    return 0; /* Limite controlado por tempo (encoder virtual) */
 }
 
 /**
  * @brief  Verifica sensor limite inferior do assento
  * @param  None
  * @retval uint8_t: 1 se limite atingido, 0 caso contrário
+ * @note   SENSORES DE LIMITE NÃO EXISTEM NO HARDWARE
+ *         Sistema usa ENCODER VIRTUAL POR TEMPO
  */
 uint8_t Safety_CheckLimitAssentoInf(void)
 {
-    /* Sensor ativo em LOW (pull-up) */
-    return (!GPIO_ReadInputPin(LIMIT_ASSENTO_INF_PORT, LIMIT_ASSENTO_INF_PIN));
+    /* Sensor físico não existe - retorna sempre 0 */
+    /* return (!GPIO_ReadInputPin(LIMIT_ASSENTO_INF_PORT, LIMIT_ASSENTO_INF_PIN)); */
+    return 0; /* Limite controlado por tempo (encoder virtual) */
 }
 
 /**
  * @brief  Verifica sensor limite superior do encosto
  * @param  None
  * @retval uint8_t: 1 se limite atingido, 0 caso contrário
+ * @note   SENSORES DE LIMITE NÃO EXISTEM NO HARDWARE
+ *         Sistema usa ENCODER VIRTUAL POR TEMPO
  */
 uint8_t Safety_CheckLimitEncostoSup(void)
 {
-    /* Sensor ativo em LOW (pull-up) */
-    return (!GPIO_ReadInputPin(LIMIT_ENCOSTO_SUP_PORT, LIMIT_ENCOSTO_SUP_PIN));
+    /* Sensor físico não existe - retorna sempre 0 */
+    /* return (!GPIO_ReadInputPin(LIMIT_ENCOSTO_SUP_PORT, LIMIT_ENCOSTO_SUP_PIN)); */
+    return 0; /* Limite controlado por tempo (encoder virtual) */
 }
 
 /**
  * @brief  Verifica sensor limite inferior do encosto
  * @param  None
  * @retval uint8_t: 1 se limite atingido, 0 caso contrário
+ * @note   SENSORES DE LIMITE NÃO EXISTEM NO HARDWARE
+ *         Sistema usa ENCODER VIRTUAL POR TEMPO
  */
 uint8_t Safety_CheckLimitEncostoInf(void)
 {
-    /* Sensor ativo em LOW (pull-up) */
-    return (!GPIO_ReadInputPin(LIMIT_ENCOSTO_INF_PORT, LIMIT_ENCOSTO_INF_PIN));
+    /* Sensor físico não existe - retorna sempre 0 */
+    /* return (!GPIO_ReadInputPin(LIMIT_ENCOSTO_INF_PORT, LIMIT_ENCOSTO_INF_PIN)); */
+    return 0; /* Limite controlado por tempo (encoder virtual) */
 }
 
 /**
@@ -1692,7 +1796,10 @@ static const uint8_t keypadMap[KEYPAD_ROWS][KEYPAD_COLS] = {
  */
 void Keypad_Init(void)
 {
-    /* Configuração já feita em GPIO_Config() */
+    /* Inicializa ADC para leitura das colunas */
+    Keypad_ADC_Init();
+    
+    /* Inicializa variáveis */
     keypadCurrentKey = KEY_NONE;
     keypadLastKey = KEY_NONE;
     keypadLastPressTime = 0;
@@ -1700,49 +1807,114 @@ void Keypad_Init(void)
 }
 
 /**
- * @brief  Lê o estado das colunas
+ * @brief  Inicializa o ADC para leitura das colunas da matriz
  * @param  None
- * @retval uint8_t: máscara com estado das colunas (bit 0-3)
+ * @retval None
  */
-static uint8_t Keypad_ReadColumn(void)
+void Keypad_ADC_Init(void)
 {
-    uint8_t cols = 0;
+    /* Desliga o ADC antes de configurar */
+    ADC1_DeInit();
     
-    /* Lê cada coluna (0 = pressionado, 1 = não pressionado) */
-    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL1_PIN) == RESET)
-        cols |= 0x01;
+    /* Configura o ADC:
+     * - Prescaler = 18 (Fadc = Fcpu/18 = 16MHz/18 = 888kHz)
+     * - Modo de conversão única
+     * - Alinhamento à direita (10 bits)
+     * - Schmitt trigger desabilitado nos pinos ADC
+     */
+    ADC1_Init(ADC1_CONVERSIONMODE_SINGLE,
+              ADC1_CHANNEL_0,              /* Canal será selecionado dinamicamente */
+              ADC1_PRESSEL_FCPU_D18,       /* Prescaler /18 */
+              ADC1_EXTTRIG_TIM,            /* Trigger externo (não usado) */
+              DISABLE,                      /* Trigger externo desabilitado */
+              ADC1_ALIGN_RIGHT,            /* Alinhamento à direita */
+              ADC1_SCHMITTTRIG_CHANNEL0 | ADC1_SCHMITTTRIG_CHANNEL1 |
+              ADC1_SCHMITTTRIG_CHANNEL2 | ADC1_SCHMITTTRIG_CHANNEL3,
+              DISABLE);                     /* Schmitt trigger desabilitado */
     
-    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL2_PIN) == RESET)
-        cols |= 0x02;
-    
-    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL3_PIN) == RESET)
-        cols |= 0x04;
-    
-    if (GPIO_ReadInputPin(KEYPAD_COL_PORT, KEYPAD_COL4_PIN) == RESET)
-        cols |= 0x08;
-    
-    return cols;
+    /* Habilita o ADC */
+    ADC1_Cmd(ENABLE);
 }
 
 /**
- * @brief  Faz scan da matriz de teclado
+ * @brief  Lê valor ADC de um canal específico
+ * @param  channel: Canal ADC a ser lido
+ * @retval uint16_t: Valor ADC (0-1023)
+ */
+uint16_t Keypad_ReadADC(ADC1_Channel_TypeDef channel)
+{
+    uint16_t adcValue = 0;
+    
+    /* Seleciona o canal */
+    ADC1_ConversionConfig(ADC1_CONVERSIONMODE_SINGLE, channel, ADC1_ALIGN_RIGHT);
+    
+    /* Inicia conversão */
+    ADC1_StartConversion();
+    
+    /* Aguarda conversão completar */
+    while (ADC1_GetFlagStatus(ADC1_FLAG_EOC) == RESET);
+    
+    /* Lê o valor convertido (10 bits) */
+    adcValue = ADC1_GetConversionValue();
+    
+    /* Limpa flag de conversão completa */
+    ADC1_ClearFlag(ADC1_FLAG_EOC);
+    
+    return adcValue;
+}
+
+/**
+ * @brief  Analisa valor ADC e determina se corresponde a uma tecla
+ * @param  adcValue: Valor ADC lido
+ * @param  row: Linha atual sendo scaneada
+ * @param  col: Coluna sendo analisada
+ * @retval uint8_t: 1 se tecla detectada, 0 caso contrário
+ */
+static uint8_t Keypad_AnalyzeADC(uint16_t adcValue, uint8_t row, uint8_t col)
+{
+    uint16_t threshold = keypadAdcThresholds[row][col];
+    
+    /* Verifica se o valor ADC está dentro da tolerância do threshold */
+    if ((adcValue >= (threshold - KEYPAD_ADC_TOLERANCE)) && 
+        (adcValue <= (threshold + KEYPAD_ADC_TOLERANCE)))
+    {
+        return 1;  /* Tecla detectada */
+    }
+    
+    return 0;  /* Nenhuma tecla detectada */
+}
+
+/**
+ * @brief  Faz scan da matriz de teclado usando ADC
  * @param  None
  * @retval uint8_t: código da tecla pressionada ou KEY_NONE
+ * 
+ * @note   Funcionamento:
+ *         1. Para cada linha, ativa LOW (GND)
+ *         2. Lê valores ADC das 4 colunas
+ *         3. Compara com thresholds para identificar tecla
+ *         4. Múltiplas chaves por coluna são diferenciadas por resistores
  */
 uint8_t Keypad_Scan(void)
 {
     uint8_t row, col;
-    uint8_t colState;
+    uint16_t adcValue;
+    ADC1_Channel_TypeDef adcChannels[KEYPAD_COLS] = {
+        KEYPAD_COL1_ADC_CHANNEL,
+        KEYPAD_COL2_ADC_CHANNEL,
+        KEYPAD_COL3_ADC_CHANNEL,
+        KEYPAD_COL4_ADC_CHANNEL
+    };
     
     /* Scan cada linha */
     for (row = 0; row < KEYPAD_ROWS; row++)
     {
-        /* Coloca todas as linhas em HIGH */
+        /* Coloca todas as linhas em HIGH (5V) */
         GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN);
         GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN);
         GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN);
         
-        /* Coloca linha atual em LOW */
+        /* Coloca linha atual em LOW (GND) */
         switch (row)
         {
             case 0:
@@ -1756,22 +1928,24 @@ uint8_t Keypad_Scan(void)
                 break;
         }
         
-        /* Pequeno delay para estabilização */
-        nop(); nop(); nop(); nop(); nop();
+        /* Delay para estabilização do circuito (importante para ADC) */
+        delay_ms(2);  /* 2ms para estabilização */
         
-        /* Lê estado das colunas */
-        colState = Keypad_ReadColumn();
-        
-        /* Verifica qual coluna foi pressionada */
-        if (colState != 0)
+        /* Lê valores ADC de cada coluna */
+        for (col = 0; col < KEYPAD_COLS; col++)
         {
-            for (col = 0; col < KEYPAD_COLS; col++)
+            /* Lê valor ADC da coluna */
+            adcValue = Keypad_ReadADC(adcChannels[col]);
+            
+            /* Analisa se o valor corresponde a uma tecla pressionada */
+            if (Keypad_AnalyzeADC(adcValue, row, col))
             {
-                if (colState & (1 << col))
-                {
-                    /* Tecla encontrada */
-                    return keypadMap[row][col];
-                }
+                /* Tecla encontrada - restaura linhas e retorna */
+                GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW1_PIN);
+                GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW2_PIN);
+                GPIO_WriteHigh(KEYPAD_ROW_PORT, KEYPAD_ROW3_PIN);
+                
+                return keypadMap[row][col];
             }
         }
     }
