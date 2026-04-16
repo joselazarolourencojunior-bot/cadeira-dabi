@@ -37,6 +37,8 @@
 /* LED Watchdog */
 #define LED_WATCHDOG_PORT           GPIOE
 #define LED_WATCHDOG_PIN            GPIO_PIN_5
+#define WATCHDOG_OUT_PORT           GPIOC
+#define WATCHDOG_OUT_PIN            GPIO_PIN_3
 
 /* Configurações dos Botões (com pull-up interno) */
 #define BTN_PORT                    GPIOB
@@ -818,6 +820,7 @@ void GPIO_Config(void)
     
     /* ========== SAÍDA - LED WATCHDOG ========== */
     GPIO_Init(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
+    GPIO_Init(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
     
     /* ========== ENTRADAS - BOTÕES (com pull-up interno) ========== */
     /* NOTA: Apenas 3 botões físicos existem no hardware (PB4, PB5, PB6) */
@@ -1124,6 +1127,7 @@ void Watchdog_Init(void)
     watchdogTimer = 0;
     watchdogState = 0;
     GPIO_WriteLow(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
+    GPIO_WriteLow(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
 }
 
 /**
@@ -1140,11 +1144,13 @@ void Watchdog_Update(void)
         if (watchdogState)
         {
             GPIO_WriteLow(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
+            GPIO_WriteLow(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
             watchdogState = 0;
         }
         else
         {
             GPIO_WriteHigh(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
+            GPIO_WriteHigh(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
             watchdogState = 1;
         }
     }
