@@ -34,9 +34,6 @@
 #define RELE_REFLETOR_PORT          GPIOD
 #define RELE_REFLETOR_PIN           GPIO_PIN_2
 
-/* LED Watchdog */
-#define LED_WATCHDOG_PORT           GPIOE
-#define LED_WATCHDOG_PIN            GPIO_PIN_5
 #define WATCHDOG_OUT_PORT           GPIOC
 #define WATCHDOG_OUT_PIN            GPIO_PIN_3
 
@@ -818,8 +815,6 @@ void GPIO_Config(void)
     GPIO_Init(RELE_DESCE_ENCOSTO_PORT, RELE_DESCE_ENCOSTO_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
     GPIO_Init(RELE_REFLETOR_PORT, RELE_REFLETOR_PIN, GPIO_MODE_OUT_OD_LOW_FAST);
     
-    /* ========== SAÍDA - LED WATCHDOG ========== */
-    GPIO_Init(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
     GPIO_Init(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN, GPIO_MODE_OUT_PP_LOW_FAST);
     
     /* ========== ENTRADAS - BOTÕES (com pull-up interno) ========== */
@@ -1126,7 +1121,6 @@ void Watchdog_Init(void)
 {
     watchdogTimer = 0;
     watchdogState = 0;
-    GPIO_WriteLow(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
     GPIO_WriteLow(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
 }
 
@@ -1143,13 +1137,11 @@ void Watchdog_Update(void)
         
         if (watchdogState)
         {
-            GPIO_WriteLow(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
             GPIO_WriteLow(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
             watchdogState = 0;
         }
         else
         {
-            GPIO_WriteHigh(LED_WATCHDOG_PORT, LED_WATCHDOG_PIN);
             GPIO_WriteHigh(WATCHDOG_OUT_PORT, WATCHDOG_OUT_PIN);
             watchdogState = 1;
         }
