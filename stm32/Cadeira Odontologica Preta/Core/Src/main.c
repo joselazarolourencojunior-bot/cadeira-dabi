@@ -58,6 +58,7 @@ static uint32_t operationStartMs = 0;
 static uint8_t refletorOn = 0;
 static uint8_t cubaOutOn = 0;
 static uint32_t cubaActiveUntilMs = 0;
+static GPIO_PinState ptPressedState = BTN_PRESSED_STATE;
 
 static DebouncedButton_t btnSobeAssento  = { sobe_assento_GPIO_Port,    sobe_assento_Pin,    0, 0, 0 };
 static DebouncedButton_t btnDesceEncosto = { desce_encosto_GPIO_Port,   desce_encosto_Pin,   0, 0, 0 };
@@ -86,7 +87,7 @@ static uint8_t EdgeFromStable(uint8_t stable, uint8_t *prevStable);
 static void StopAllMotors(void);
 static void StartVoltaZero(uint32_t now);
 static void StartPosicaoTrabalho(uint32_t now);
-static void DebounceButton_Update(DebouncedButton_t *btn, uint32_t now);
+static void DebounceButton_UpdateWithPressedState(DebouncedButton_t *btn, GPIO_PinState pressedState, uint32_t now);
 static void Buttons_Update(uint32_t now);
 static void ManualControl_Update(void);
 static void UpdateNonMotorOutputs(void);
@@ -126,9 +127,9 @@ static void StartPosicaoTrabalho(uint32_t now)
   systemState = SYSTEM_POSICAO_TRABALHO;
 }
 
-static void DebounceButton_Update(DebouncedButton_t *btn, uint32_t now)
+static void DebounceButton_UpdateWithPressedState(DebouncedButton_t *btn, GPIO_PinState pressedState, uint32_t now)
 {
-  uint8_t raw = (HAL_GPIO_ReadPin(btn->port, btn->pin) == BTN_PRESSED_STATE) ? 1U : 0U;
+  uint8_t raw = (HAL_GPIO_ReadPin(btn->port, btn->pin) == pressedState) ? 1U : 0U;
 
   if (raw != btn->lastRaw)
   {
@@ -148,14 +149,14 @@ static void DebounceButton_Update(DebouncedButton_t *btn, uint32_t now)
 
 static void Buttons_Update(uint32_t now)
 {
-  DebounceButton_Update(&btnSobeAssento, now);
-  DebounceButton_Update(&btnDesceAssento, now);
-  DebounceButton_Update(&btnSobeEncosto, now);
-  DebounceButton_Update(&btnDesceEncosto, now);
-  DebounceButton_Update(&btnRefletor, now);
-  DebounceButton_Update(&btnVZ, now);
-  DebounceButton_Update(&btnPT, now);
-  DebounceButton_Update(&btnCuba, now);
+  DebounceButton_UpdateWithPressedState(&btnSobeAssento, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnDesceAssento, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnSobeEncosto, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnDesceEncosto, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnRefletor, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnVZ, BTN_PRESSED_STATE, now);
+  DebounceButton_UpdateWithPressedState(&btnPT, ptPressedState, now);
+  DebounceButton_UpdateWithPressedState(&btnCuba, BTN_PRESSED_STATE, now);
 }
 
 static void ManualControl_Update(void)
@@ -212,13 +213,15 @@ int main(void)
 
   watchdogLastToggleMs = HAL_GetTick();
 
+  ptPressedState = BTN_PRESSED_STATE;
+
   btnSobeAssento.lastRaw  = (HAL_GPIO_ReadPin(btnSobeAssento.port, btnSobeAssento.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
   btnDesceAssento.lastRaw = (HAL_GPIO_ReadPin(btnDesceAssento.port, btnDesceAssento.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
   btnSobeEncosto.lastRaw  = (HAL_GPIO_ReadPin(btnSobeEncosto.port, btnSobeEncosto.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
   btnDesceEncosto.lastRaw = (HAL_GPIO_ReadPin(btnDesceEncosto.port, btnDesceEncosto.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
   btnRefletor.lastRaw     = (HAL_GPIO_ReadPin(btnRefletor.port, btnRefletor.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
   btnVZ.lastRaw           = (HAL_GPIO_ReadPin(btnVZ.port, btnVZ.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
-  btnPT.lastRaw           = (HAL_GPIO_ReadPin(btnPT.port, btnPT.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
+  btnPT.lastRaw           = (HAL_GPIO_ReadPin(btnPT.port, btnPT.pin) == ptPressedState) ? 1U : 0U;
   btnCuba.lastRaw         = (HAL_GPIO_ReadPin(btnCuba.port, btnCuba.pin) == BTN_PRESSED_STATE) ? 1U : 0U;
 
   btnSobeAssento.stable  = btnSobeAssento.lastRaw;
