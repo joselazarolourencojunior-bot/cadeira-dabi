@@ -36,6 +36,17 @@ typedef struct
 #define AUTO_MOVEMENT_MS   30000U
 #define BTN_PRESSED_STATE  GPIO_PIN_RESET
 #define WATCHDOG_TOGGLE_MS 500U
+#define CUBA_PULSE_MS      5000U
+
+#if defined(cuba_in2_GPIO_Port) && defined(cuba_in2_Pin)
+#define CUBA_IN_GPIO_Port cuba_in2_GPIO_Port
+#define CUBA_IN_Pin       cuba_in2_Pin
+#elif defined(cuba_in_GPIO_Port) && defined(cuba_in_Pin)
+#define CUBA_IN_GPIO_Port cuba_in_GPIO_Port
+#define CUBA_IN_Pin       cuba_in_Pin
+#else
+#error "CUBA input pin not defined (expected cuba_in2_* or cuba_in_*)"
+#endif
 /* USER CODE END PD */
 
 /* USER CODE BEGIN PV */
@@ -46,6 +57,7 @@ static uint32_t operationStartMs = 0;
 
 static uint8_t refletorOn = 0;
 static uint8_t cubaOutOn = 0;
+static uint32_t cubaActiveUntilMs = 0;
 
 static DebouncedButton_t btnSobeAssento  = { sobe_assento_GPIO_Port,    sobe_assento_Pin,    0, 0, 0 };
 static DebouncedButton_t btnDesceEncosto = { desce_encosto_GPIO_Port,   desce_encosto_Pin,   0, 0, 0 };
@@ -54,7 +66,7 @@ static DebouncedButton_t btnDesceAssento = { desce_assento_GPIO_Port,   desce_as
 static DebouncedButton_t btnRefletor     = { bt_refletor_GPIO_Port,     bt_refletor_Pin,     0, 0, 0 };
 static DebouncedButton_t btnVZ           = { vz_GPIO_Port,              vz_Pin,              0, 0, 0 };
 static DebouncedButton_t btnPT           = { pt_GPIO_Port,              pt_Pin,              0, 0, 0 };
-static DebouncedButton_t btnCuba         = { cuba_in2_GPIO_Port,        cuba_in2_Pin,        0, 0, 0 };
+static DebouncedButton_t btnCuba         = { CUBA_IN_GPIO_Port,         CUBA_IN_Pin,         0, 0, 0 };
 
 static uint8_t prevSobeAssento = 0;
 static uint8_t prevDesceAssento = 0;
@@ -255,8 +267,12 @@ int main(void)
 
     if (edgeCuba && systemState == SYSTEM_IDLE)
     {
-      cubaOutOn = (uint8_t)!cubaOutOn;
+      if (cubaActiveUntilMs < now)
+        cubaActiveUntilMs = now;
+      cubaActiveUntilMs += CUBA_PULSE_MS;
     }
+
+    cubaOutOn = (now < cubaActiveUntilMs) ? 1U : 0U;
 
     uint8_t anyKeyPressedEdge =
         (edgeSobeAssento || edgeDesceAssento || edgeSobeEncosto || edgeDesceEncosto ||
@@ -370,10 +386,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = cuba_in2_Pin;
+  GPIO_InitStruct.Pin = CUBA_IN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(cuba_in2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(CUBA_IN_GPIO_Port, &GPIO_InitStruct);
 
   GPIO_InitStruct.Pin = out_cuba_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
