@@ -33,6 +33,7 @@ typedef struct
 
 /* USER CODE BEGIN PD */
 #define BTN_DEBOUNCE_MS    50U
+#define PT_DEBOUNCE_MS     10U
 #define AUTO_MOVEMENT_MS   60000U
 #define BTN_PRESSED_STATE  GPIO_PIN_RESET
 #define WATCHDOG_TOGGLE_MS 500U
@@ -299,6 +300,18 @@ static void PT_Recall_Update(uint32_t now)
 
 static void StartPosicaoTrabalho(uint32_t now)
 {
+  if (!ptMemValid)
+  {
+    StopAllMotors();
+    HAL_GPIO_WritePin(GPIOB, rele_sobe_assento_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, rele_desce_encosto_Pin, GPIO_PIN_SET);
+    recallSeatUntilMs = now + PT_MAX_MOVE_MS;
+    recallBackUntilMs = now + PT_MAX_MOVE_MS;
+    operationStartMs = now;
+    systemState = SYSTEM_POSICAO_TRABALHO;
+    return;
+  }
+
   PT_Recall_Start(now);
   operationStartMs = now;
   systemState = SYSTEM_POSICAO_TRABALHO;
@@ -317,7 +330,8 @@ static void DebounceButton_UpdateWithPressedState(DebouncedButton_t *btn, GPIO_P
 
   if (btn->stable != raw)
   {
-    if ((now - btn->lastChangeMs) >= BTN_DEBOUNCE_MS)
+    uint32_t debounceMs = (btn == &btnPT) ? PT_DEBOUNCE_MS : BTN_DEBOUNCE_MS;
+    if ((now - btn->lastChangeMs) >= debounceMs)
     {
       btn->stable = raw;
     }
@@ -508,6 +522,10 @@ int main(void)
           errorBlinkUntilMs = now + 2000U;
           ptRecallAfterVZ = 1U;
           StartVoltaZero(now);
+        }
+        else if (systemState == SYSTEM_IDLE && !ptMemValid)
+        {
+          StartPosicaoTrabalho(now);
         }
       }
       ptPressStartMs = 0U;
